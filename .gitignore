@@ -1,0 +1,32 @@
+# --- Secrets / environment ---
+.env
+*.key
+keys.txt
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+
+# --- Tooling caches ---
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+
+# --- crewAI ---
+.crewai/
+logs.txt
+
+# --- Generated reports (uncomment to ignore run outputs) ---
+# output/
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

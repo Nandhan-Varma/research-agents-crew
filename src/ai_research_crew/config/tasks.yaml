@@ -1,0 +1,60 @@
+research_task:
+  description: >
+    First run at least 3 varied search queries about {topic} to get broad coverage
+    (recent developments, differing perspectives, lesser-known sources). Then, for the
+    most relevant 8-10 URLs found, use the extractor tool to pull full page content —
+    do not rely on the search snippet alone. Retain the extracted content (or the longest
+    available excerpt if extraction fails for a given URL) along with the URL and the
+    query that found it. Do not summarize, condense, or interpret the content here —
+    that is not this task's job.
+  expected_output: >
+    A JSON array, one object per finding:
+    [{"url": "...", "raw_content": "...","query_used":"..."}]
+  agent: researcher
+
+analyst_task:
+  description: >
+    Read through all findings from the research task. For each finding with enough real
+    substance, write a short paragraph (3-4 sentences) capturing its concrete facts,
+    figures, and specifics in your own words — not a copy or light reword of the raw
+    content. Assign each claim a category label (2-4 words) based only on that claim's
+    own content — do not use a fixed or predetermined list, since categories must fit
+    whatever topic is given. Aim for 4-8 distinct categories total; merge near-identical
+    categories into a single shared label rather than creating duplicates. Skip findings
+    that are just headlines, taglines, or generic site descriptions with no real fact in
+    them. Where two findings disagree, do not resolve the disagreement — flag it
+    explicitly via conflicts_with.
+  expected_output: >
+    A JSON array of claims:
+    [{"source_url": "...", "category":"...", "detail":"...", conflicts_with": null_or_string}]
+  agent: analyst
+  context: ["research_task"]
+
+writer_task:
+  description: >
+    Compose a report from the analyst's claims. Write an executive summary that
+    highlights the most material findings and any notable disagreements between
+    sources. Then group the claims by their existing category label — do not invent
+    your own section names. Present each source's detail paragraph as-is under its
+    category, one paragraph per source, followed by its citation; do not merge multiple
+    sources into a single paragraph, and do not compress a source's paragraph into one
+    line. Only lightly smooth wording for readability. Finish with a synthesized future
+    outlook paragraph drawing across categories.
+  expected_output: >
+    A JSON object matching the ResearchReport schema:
+    {"executive_summary": "...", "key_findings": [{"text": "...", "source_url": "...","category":"..."}],
+     "sources": ["..."], "future_outlook": "..."}
+  agent: writer
+  context: ["analyst_task"]
+
+verify_task:
+  description: >
+    For each key finding in the writer's report, confirm its source_url
+    actually corresponds to a claim the analyst extracted with matching
+    content — not merely that the URL is reachable. Flag any finding that
+    cannot be traced back; never delete it silently.
+  expected_output: >
+    The same ResearchReport JSON, with an added field:
+    "unverified_claims": ["..."]
+  agent: verifier
+  context: ["analyst_task", "writer_task"]
